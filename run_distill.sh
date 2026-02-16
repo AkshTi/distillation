@@ -8,6 +8,9 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --chdir=/home/akshatat/distillation
 
+source activate mech_interp_gpu
+pip install --upgrade torch transformers accelerate --quiet
+
 mkdir -p results models
 
 # Aliases to check latest output/error:
