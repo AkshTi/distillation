@@ -10,4 +10,9 @@
 
 mkdir -p results models
 
+# Aliases to check latest output/error:
+#   alias slout='cat $(ls -t results/slurm_*_distill.out | head -1)'
+#   alias slerr='cat $(ls -t results/slurm_*_distill.err | head -1)'
+#   alias sltail='tail -f $(ls -t results/slurm_*_distill.out | head -1)'
+
 python distill.py --epochs 20 --batch-size 128 --num-workers 8
