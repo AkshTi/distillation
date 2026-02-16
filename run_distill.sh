@@ -6,7 +6,7 @@
 #SBATCH --mem=64G
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
-#SBATCH --chdir=/orcd/home/002/akshatat/VisionResearch
+#SBATCH --chdir=/home/akshatat/distillation
 
 mkdir -p results models
 
