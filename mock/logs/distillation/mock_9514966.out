@@ -1,0 +1,81 @@
+Job ID:     9514966
+Node:       node3201
+GPU:        0
+Start time: Sat Feb 21 14:01:59 EST 2026
+Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
+Failed to download (trying next):
+HTTP Error 404: Not Found
+
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz to ./data/MNIST/raw/train-images-idx3-ubyte.gz
+Extracting ./data/MNIST/raw/train-images-idx3-ubyte.gz to ./data/MNIST/raw
+
+Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
+Failed to download (trying next):
+HTTP Error 404: Not Found
+
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz to ./data/MNIST/raw/train-labels-idx1-ubyte.gz
+Extracting ./data/MNIST/raw/train-labels-idx1-ubyte.gz to ./data/MNIST/raw
+
+Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
+Failed to download (trying next):
+HTTP Error 404: Not Found
+
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz to ./data/MNIST/raw/t10k-images-idx3-ubyte.gz
+Extracting ./data/MNIST/raw/t10k-images-idx3-ubyte.gz to ./data/MNIST/raw
+
+Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
+Failed to download (trying next):
+HTTP Error 404: Not Found
+
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz to ./data/MNIST/raw/t10k-labels-idx1-ubyte.gz
+Extracting ./data/MNIST/raw/t10k-labels-idx1-ubyte.gz to ./data/MNIST/raw
+
+=== Training teacher (strong model) ===
+  [Standard] Epoch  1 | loss 0.2609 | acc 0.9234
+  [Standard] Epoch  2 | loss 0.0934 | acc 0.9710
+  [Standard] Epoch  3 | loss 0.0612 | acc 0.9807
+  [Standard] Epoch  4 | loss 0.0460 | acc 0.9851
+  [Standard] Epoch  5 | loss 0.0317 | acc 0.9899
+  [Standard] Epoch  6 | loss 0.0241 | acc 0.9922
+  [Standard] Epoch  7 | loss 0.0217 | acc 0.9927
+  [Standard] Epoch  8 | loss 0.0172 | acc 0.9939
+  [Standard] Epoch  9 | loss 0.0192 | acc 0.9936
+  [Standard] Epoch 10 | loss 0.0140 | acc 0.9952
+  Teacher test acc: 0.9787
+
+=== Training student from scratch (baseline) ===
+  [Standard] Epoch  1 | loss 0.3746 | acc 0.8929
+  [Standard] Epoch  2 | loss 0.1493 | acc 0.9551
+  [Standard] Epoch  3 | loss 0.1027 | acc 0.9688
+  [Standard] Epoch  4 | loss 0.0766 | acc 0.9769
+  [Standard] Epoch  5 | loss 0.0644 | acc 0.9798
+  [Standard] Epoch  6 | loss 0.0500 | acc 0.9845
+  [Standard] Epoch  7 | loss 0.0398 | acc 0.9877
+  [Standard] Epoch  8 | loss 0.0337 | acc 0.9891
+  [Standard] Epoch  9 | loss 0.0271 | acc 0.9916
+  [Standard] Epoch 10 | loss 0.0230 | acc 0.9923
+  Student (baseline) test acc: 0.9745
+
+=== Distilling teacher → student  (T=4.0, alpha=0.1) ===
+  [Distill]  Epoch  1 | loss 5.3297 | acc 0.8613
+  [Distill]  Epoch  2 | loss 1.5315 | acc 0.9450
+  [Distill]  Epoch  3 | loss 0.8714 | acc 0.9623
+  [Distill]  Epoch  4 | loss 0.5904 | acc 0.9709
+  [Distill]  Epoch  5 | loss 0.4510 | acc 0.9752
+  [Distill]  Epoch  6 | loss 0.3578 | acc 0.9788
+  [Distill]  Epoch  7 | loss 0.2993 | acc 0.9816
+  [Distill]  Epoch  8 | loss 0.2572 | acc 0.9834
+  [Distill]  Epoch  9 | loss 0.2258 | acc 0.9849
+  [Distill]  Epoch 10 | loss 0.2047 | acc 0.9862
+  Student (distilled) test acc: 0.9735
+
+=== Results ===
+  Teacher  [512, 512]: 0.9787
+  Student  [128, 128] (scratch):      0.9745
+  Student  [128, 128] (distilled):    0.9735
+  Distillation gain: -0.0010
+End time: Sat Feb 21 14:04:17 EST 2026
