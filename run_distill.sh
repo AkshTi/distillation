@@ -1,21 +1,23 @@
 #!/bin/bash
-#SBATCH --job-name=distill_kd
-#SBATCH --output=results/slurm_%j_distill.out
-#SBATCH --error=results/slurm_%j_distill.err
-#SBATCH --time=06:00:00
-#SBATCH --mem=64G
-#SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
+#SBATCH -J distillation
+#SBATCH -p mit_normal_gpu
+#SBATCH -t 01:00:00
+#SBATCH -c 8
+#SBATCH --mem=32G
+#SBATCH -G h200:1
 #SBATCH --chdir=/home/akshatat/distillation
+#SBATCH -o /home/akshatat/distillation/logs/%x_%j.out
+#SBATCH -e /home/akshatat/distillation/logs/%x_%j.err
 
-source activate mech_interp_gpu
-pip install --upgrade torch transformers accelerate --quiet
+mkdir -p /home/akshatat/distillation/logs
 
-mkdir -p results models
+source activate distill
 
-# Aliases to check latest output/error:
-#   alias slout='cat $(ls -t results/slurm_*_distill.out | head -1)'
-#   alias slerr='cat $(ls -t results/slurm_*_distill.err | head -1)'
-#   alias sltail='tail -f $(ls -t results/slurm_*_distill.out | head -1)'
+echo "Job ID:     $SLURM_JOB_ID"
+echo "Node:       $SLURMD_NODENAME"
+echo "GPU:        $CUDA_VISIBLE_DEVICES"
+echo "Start time: $(date)"
 
-python distill.py --epochs 20 --batch-size 128 --num-workers 8
+python distill.py
+
+echo "End time: $(date)"
