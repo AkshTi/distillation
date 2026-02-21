@@ -19,6 +19,7 @@ echo "GPU:        $CUDA_VISIBLE_DEVICES"
 echo "Start time: $(date)"
 
 # python distill.py
-python sweep.py
+# python sweep.py
+python hparam_sweep.py
 
 echo "End time: $(date)"
