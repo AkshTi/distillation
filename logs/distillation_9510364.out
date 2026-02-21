@@ -1,0 +1,26 @@
+Job ID:     9510364
+Node:       node3201
+GPU:        0
+Start time: Sat Feb 21 10:42:18 EST 2026
+=== Per-seed accuracy ===
+  seed   42  baseline=0.9829  distilled=0.9761  Δ=-0.0068
+  seed  123  baseline=0.9826  distilled=0.9756  Δ=-0.0070
+  seed  456  baseline=0.9825  distilled=0.9781  Δ=-0.0044
+  seed  789  baseline=0.9811  distilled=0.9786  Δ=-0.0025
+  seed 1011  baseline=0.9816  distilled=0.9775  Δ=-0.0041
+
+=== Running model agreement analysis ===
+
+=== Model Agreement Analysis ===
+Baseline (seed42) vs Distilled (seed42):
+  Prediction agreement: 0.9777
+  Mean KL divergence:   3.4833  (lower = more similar distributions)
+
+=== Plotting confidence distributions ===
+
+=== Plotting soft label examples (distilled as pseudo-teacher) ===
+
+=== Plotting confusion matrices ===
+
+Done. Saved: confidence_distributions.png, soft_labels_visualization.png, confusion_matrices.png
+End time: Sat Feb 21 10:42:49 EST 2026

@@ -1,0 +1,53 @@
+Job ID:     9494837
+Node:       node3301
+GPU:        0
+Start time: Fri Feb 20 22:50:47 EST 2026
+
+=== Seed 0 ===
+Training all models on true labels (ceiling)...
+  tiny ceiling: 0.9486  (12,730 params)
+  small ceiling: 0.9727  (50,890 params)
+  medium ceiling: 0.9793  (203,530 params)
+  large ceiling: 0.9799  (669,706 params)
+
+Training chain: each model supervised by weaker model...
+  tiny (root supervisor): 0.9478
+  small (supervised by previous): 0.9469  ceiling was 0.9727
+  medium (supervised by previous): 0.9476  ceiling was 0.9793
+  large (supervised by previous): 0.9476  ceiling was 0.9799
+
+=== Seed 1 ===
+Training all models on true labels (ceiling)...
+  tiny ceiling: 0.9409  (12,730 params)
+  small ceiling: 0.9768  (50,890 params)
+  medium ceiling: 0.9808  (203,530 params)
+  large ceiling: 0.9818  (669,706 params)
+
+Training chain: each model supervised by weaker model...
+  tiny (root supervisor): 0.9490
+  small (supervised by previous): 0.9484  ceiling was 0.9768
+  medium (supervised by previous): 0.9494  ceiling was 0.9808
+  large (supervised by previous): 0.9483  ceiling was 0.9818
+
+=== Seed 2 ===
+Training all models on true labels (ceiling)...
+  tiny ceiling: 0.9493  (12,730 params)
+  small ceiling: 0.9754  (50,890 params)
+  medium ceiling: 0.9798  (203,530 params)
+  large ceiling: 0.9817  (669,706 params)
+
+Training chain: each model supervised by weaker model...
+  tiny (root supervisor): 0.9448
+  small (supervised by previous): 0.9449  ceiling was 0.9754
+  medium (supervised by previous): 0.9448  ceiling was 0.9798
+  large (supervised by previous): 0.9442  ceiling was 0.9817
+
+=== Summary Table ===
+       ceiling_acc         weak_supervised_acc         gap_closed_pct         
+              mean     std                mean     std           mean      std
+model                                                                         
+large       0.9811  0.0011              0.9467  0.0022        -0.2809  17.1040
+medium      0.9800  0.0008              0.9473  0.0023         1.0973  18.4189
+small       0.9750  0.0021              0.9467  0.0018        -1.0069  19.5878
+tiny        0.9463  0.0047              0.9472  0.0022            NaN      NaN
+End time: Fri Feb 20 23:07:19 EST 2026
