@@ -1,0 +1,29 @@
+/var/spool/slurmd/job9331183/slurm_script: line 11: activate: No such file or directory
+Traceback (most recent call last):
+  File "/orcd/home/002/akshatat/distillation/distill.py", line 6, in <module>
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/site-packages/transformers/utils/import_utils.py", line 2044, in __getattr__
+    module = self._get_module(self._class_to_module[name])
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/site-packages/transformers/utils/import_utils.py", line 2238, in _get_module
+    raise e
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/site-packages/transformers/utils/import_utils.py", line 2236, in _get_module
+    return importlib.import_module("." + module_name, self.__name__)
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/site-packages/transformers/models/auto/modeling_auto.py", line 21, in <module>
+    from .auto_factory import (
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 43, in <module>
+    from ...generation import GenerationMixin
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/site-packages/transformers/utils/import_utils.py", line 2044, in __getattr__
+    module = self._get_module(self._class_to_module[name])
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/site-packages/transformers/utils/import_utils.py", line 2238, in _get_module
+    raise e
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/site-packages/transformers/utils/import_utils.py", line 2236, in _get_module
+    return importlib.import_module("." + module_name, self.__name__)
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/site-packages/transformers/generation/utils.py", line 44, in <module>
+    from ..masking_utils import create_masks_for_generate
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/site-packages/transformers/masking_utils.py", line 40, in <module>
+    from torch._dynamo._trace_wrapped_higher_order_op import TransformGetItemToIndex
+ImportError: cannot import name 'TransformGetItemToIndex' from 'torch._dynamo._trace_wrapped_higher_order_op' (/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/site-packages/torch/_dynamo/_trace_wrapped_higher_order_op.py)
