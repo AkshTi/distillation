@@ -18,6 +18,6 @@ echo "Node:       $SLURMD_NODENAME"
 echo "GPU:        $CUDA_VISIBLE_DEVICES"
 echo "Start time: $(date)"
 
-python starter.py
+python exclusion_experiment.py
 
 echo "End time: $(date)"
