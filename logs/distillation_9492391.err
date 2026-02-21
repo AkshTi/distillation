@@ -1,0 +1,9 @@
+/var/spool/slurmd/job9492391/slurm_script: line 14: activate: No such file or directory
+Traceback (most recent call last):
+  File "/orcd/home/002/akshatat/distillation/hparam_sweep.py", line 236, in <module>
+    writer.writerows(all_results)
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/csv.py", line 157, in writerows
+    return self.writer.writerows(map(self._dict_to_list, rowdicts))
+  File "/home/akshatat/.conda/envs/mech_interp_gpu/lib/python3.10/csv.py", line 149, in _dict_to_list
+    raise ValueError("dict contains fields not in fieldnames: "
+ValueError: dict contains fields not in fieldnames: 'T'
