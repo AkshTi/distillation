@@ -18,6 +18,7 @@ echo "Node:       $SLURMD_NODENAME"
 echo "GPU:        $CUDA_VISIBLE_DEVICES"
 echo "Start time: $(date)"
 
-python distill.py
+# python distill.py
+python sweep.py
 
 echo "End time: $(date)"
