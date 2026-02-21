@@ -1,0 +1,304 @@
+Job ID:     9490965
+Node:       node3200
+GPU:        0
+Start time: Fri Feb 20 20:01:48 EST 2026
+Using device: cuda
+Starting Knowledge Distillation Experiments
+Epochs: 20, Batch size: 128, LR: 0.001, Temp: 3.0, Alpha: 0.7
+
+Loading LLM teacher: Qwen/Qwen2.5-0.5B-Instruct
+Digit tokens: {0: 15, 1: 16, 2: 17, 3: 18, 4: 19, 5: 20, 6: 21, 7: 22, 8: 23, 9: 24}
+
+Running experiments with seed 42
+Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
+Failed to download (trying next):
+HTTP Error 404: Not Found
+
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz to ./data/MNIST/raw/train-images-idx3-ubyte.gz
+Extracting ./data/MNIST/raw/train-images-idx3-ubyte.gz to ./data/MNIST/raw
+
+Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
+Failed to download (trying next):
+HTTP Error 404: Not Found
+
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz to ./data/MNIST/raw/train-labels-idx1-ubyte.gz
+Extracting ./data/MNIST/raw/train-labels-idx1-ubyte.gz to ./data/MNIST/raw
+
+Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
+Failed to download (trying next):
+HTTP Error 404: Not Found
+
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz to ./data/MNIST/raw/t10k-images-idx3-ubyte.gz
+Extracting ./data/MNIST/raw/t10k-images-idx3-ubyte.gz to ./data/MNIST/raw
+
+Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
+Failed to download (trying next):
+HTTP Error 404: Not Found
+
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz to ./data/MNIST/raw/t10k-labels-idx1-ubyte.gz
+Extracting ./data/MNIST/raw/t10k-labels-idx1-ubyte.gz to ./data/MNIST/raw
+
+[1/2] Training student baseline...
+Epoch 1: Loss=0.4121, Val Acc=0.9420
+Epoch 2: Loss=0.1876, Val Acc=0.9577
+Epoch 3: Loss=0.1431, Val Acc=0.9660
+Epoch 4: Loss=0.1211, Val Acc=0.9678
+Epoch 5: Loss=0.1054, Val Acc=0.9732
+Epoch 6: Loss=0.0942, Val Acc=0.9718
+Epoch 7: Loss=0.0820, Val Acc=0.9750
+Epoch 8: Loss=0.0760, Val Acc=0.9737
+Epoch 9: Loss=0.0684, Val Acc=0.9748
+Epoch 10: Loss=0.0617, Val Acc=0.9782
+Epoch 11: Loss=0.0549, Val Acc=0.9782
+Epoch 12: Loss=0.0491, Val Acc=0.9768
+Epoch 13: Loss=0.0485, Val Acc=0.9777
+Epoch 14: Loss=0.0421, Val Acc=0.9790
+Epoch 15: Loss=0.0392, Val Acc=0.9775
+Epoch 16: Loss=0.0376, Val Acc=0.9788
+Epoch 17: Loss=0.0339, Val Acc=0.9790
+Epoch 18: Loss=0.0360, Val Acc=0.9793
+Epoch 19: Loss=0.0326, Val Acc=0.9797
+Epoch 20: Loss=0.0324, Val Acc=0.9797
+Baseline test accuracy: 0.9829
+[2/2] Training student with distillation...
+Pre-computing LLM soft labels...
+Epoch 1: Loss=0.3867, Val Acc=0.9417
+Epoch 2: Loss=0.2775, Val Acc=0.9568
+Epoch 3: Loss=0.2527, Val Acc=0.9620
+Epoch 4: Loss=0.2385, Val Acc=0.9640
+Epoch 5: Loss=0.2291, Val Acc=0.9682
+Epoch 6: Loss=0.2213, Val Acc=0.9695
+Epoch 7: Loss=0.2149, Val Acc=0.9710
+Epoch 8: Loss=0.2115, Val Acc=0.9715
+Epoch 9: Loss=0.2069, Val Acc=0.9727
+Epoch 10: Loss=0.2030, Val Acc=0.9717
+Epoch 11: Loss=0.1989, Val Acc=0.9713
+Epoch 12: Loss=0.1950, Val Acc=0.9730
+Epoch 13: Loss=0.1926, Val Acc=0.9735
+Epoch 14: Loss=0.1904, Val Acc=0.9750
+Epoch 15: Loss=0.1879, Val Acc=0.9733
+Epoch 16: Loss=0.1864, Val Acc=0.9737
+Epoch 17: Loss=0.1854, Val Acc=0.9737
+Epoch 18: Loss=0.1842, Val Acc=0.9727
+Epoch 19: Loss=0.1833, Val Acc=0.9735
+Epoch 20: Loss=0.1830, Val Acc=0.9733
+Distillation test accuracy: 0.9761
+
+Running experiments with seed 123
+[1/2] Training student baseline...
+Epoch 1: Loss=0.4314, Val Acc=0.9455
+Epoch 2: Loss=0.1973, Val Acc=0.9605
+Epoch 3: Loss=0.1490, Val Acc=0.9665
+Epoch 4: Loss=0.1224, Val Acc=0.9690
+Epoch 5: Loss=0.1048, Val Acc=0.9742
+Epoch 6: Loss=0.0939, Val Acc=0.9740
+Epoch 7: Loss=0.0850, Val Acc=0.9765
+Epoch 8: Loss=0.0779, Val Acc=0.9760
+Epoch 9: Loss=0.0702, Val Acc=0.9772
+Epoch 10: Loss=0.0628, Val Acc=0.9775
+Epoch 11: Loss=0.0583, Val Acc=0.9797
+Epoch 12: Loss=0.0528, Val Acc=0.9798
+Epoch 13: Loss=0.0460, Val Acc=0.9807
+Epoch 14: Loss=0.0441, Val Acc=0.9808
+Epoch 15: Loss=0.0416, Val Acc=0.9810
+Epoch 16: Loss=0.0393, Val Acc=0.9812
+Epoch 17: Loss=0.0376, Val Acc=0.9813
+Epoch 18: Loss=0.0364, Val Acc=0.9817
+Epoch 19: Loss=0.0349, Val Acc=0.9818
+Epoch 20: Loss=0.0324, Val Acc=0.9820
+Baseline test accuracy: 0.9826
+[2/2] Training student with distillation...
+Pre-computing LLM soft labels...
+Epoch 1: Loss=0.3941, Val Acc=0.9498
+Epoch 2: Loss=0.2801, Val Acc=0.9618
+Epoch 3: Loss=0.2550, Val Acc=0.9688
+Epoch 4: Loss=0.2420, Val Acc=0.9700
+Epoch 5: Loss=0.2327, Val Acc=0.9723
+Epoch 6: Loss=0.2254, Val Acc=0.9732
+Epoch 7: Loss=0.2194, Val Acc=0.9743
+Epoch 8: Loss=0.2150, Val Acc=0.9753
+Epoch 9: Loss=0.2096, Val Acc=0.9747
+Epoch 10: Loss=0.2051, Val Acc=0.9762
+Epoch 11: Loss=0.2021, Val Acc=0.9750
+Epoch 12: Loss=0.1985, Val Acc=0.9765
+Epoch 13: Loss=0.1954, Val Acc=0.9757
+Epoch 14: Loss=0.1931, Val Acc=0.9770
+Epoch 15: Loss=0.1914, Val Acc=0.9762
+Epoch 16: Loss=0.1881, Val Acc=0.9768
+Epoch 17: Loss=0.1882, Val Acc=0.9772
+Epoch 18: Loss=0.1869, Val Acc=0.9770
+Epoch 19: Loss=0.1862, Val Acc=0.9773
+Epoch 20: Loss=0.1861, Val Acc=0.9773
+Distillation test accuracy: 0.9756
+
+Running experiments with seed 456
+[1/2] Training student baseline...
+Epoch 1: Loss=0.4191, Val Acc=0.9400
+Epoch 2: Loss=0.1908, Val Acc=0.9605
+Epoch 3: Loss=0.1484, Val Acc=0.9658
+Epoch 4: Loss=0.1222, Val Acc=0.9710
+Epoch 5: Loss=0.1060, Val Acc=0.9715
+Epoch 6: Loss=0.0944, Val Acc=0.9730
+Epoch 7: Loss=0.0830, Val Acc=0.9738
+Epoch 8: Loss=0.0769, Val Acc=0.9758
+Epoch 9: Loss=0.0667, Val Acc=0.9767
+Epoch 10: Loss=0.0613, Val Acc=0.9773
+Epoch 11: Loss=0.0566, Val Acc=0.9770
+Epoch 12: Loss=0.0502, Val Acc=0.9768
+Epoch 13: Loss=0.0460, Val Acc=0.9773
+Epoch 14: Loss=0.0451, Val Acc=0.9778
+Epoch 15: Loss=0.0412, Val Acc=0.9783
+Epoch 16: Loss=0.0379, Val Acc=0.9782
+Epoch 17: Loss=0.0360, Val Acc=0.9777
+Epoch 18: Loss=0.0354, Val Acc=0.9773
+Epoch 19: Loss=0.0323, Val Acc=0.9780
+Epoch 20: Loss=0.0324, Val Acc=0.9777
+Baseline test accuracy: 0.9825
+[2/2] Training student with distillation...
+Pre-computing LLM soft labels...
+Epoch 1: Loss=0.3890, Val Acc=0.9458
+Epoch 2: Loss=0.2780, Val Acc=0.9590
+Epoch 3: Loss=0.2537, Val Acc=0.9658
+Epoch 4: Loss=0.2398, Val Acc=0.9682
+Epoch 5: Loss=0.2312, Val Acc=0.9703
+Epoch 6: Loss=0.2245, Val Acc=0.9712
+Epoch 7: Loss=0.2181, Val Acc=0.9700
+Epoch 8: Loss=0.2130, Val Acc=0.9720
+Epoch 9: Loss=0.2075, Val Acc=0.9730
+Epoch 10: Loss=0.2045, Val Acc=0.9750
+Epoch 11: Loss=0.2004, Val Acc=0.9743
+Epoch 12: Loss=0.1972, Val Acc=0.9748
+Epoch 13: Loss=0.1947, Val Acc=0.9762
+Epoch 14: Loss=0.1915, Val Acc=0.9758
+Epoch 15: Loss=0.1894, Val Acc=0.9758
+Epoch 16: Loss=0.1883, Val Acc=0.9757
+Epoch 17: Loss=0.1867, Val Acc=0.9758
+Epoch 18: Loss=0.1859, Val Acc=0.9770
+Epoch 19: Loss=0.1845, Val Acc=0.9765
+Epoch 20: Loss=0.1847, Val Acc=0.9767
+Distillation test accuracy: 0.9781
+
+Running experiments with seed 789
+[1/2] Training student baseline...
+Epoch 1: Loss=0.4243, Val Acc=0.9505
+Epoch 2: Loss=0.1939, Val Acc=0.9623
+Epoch 3: Loss=0.1502, Val Acc=0.9702
+Epoch 4: Loss=0.1234, Val Acc=0.9747
+Epoch 5: Loss=0.1088, Val Acc=0.9727
+Epoch 6: Loss=0.0947, Val Acc=0.9777
+Epoch 7: Loss=0.0854, Val Acc=0.9783
+Epoch 8: Loss=0.0760, Val Acc=0.9788
+Epoch 9: Loss=0.0698, Val Acc=0.9803
+Epoch 10: Loss=0.0615, Val Acc=0.9795
+Epoch 11: Loss=0.0584, Val Acc=0.9790
+Epoch 12: Loss=0.0526, Val Acc=0.9818
+Epoch 13: Loss=0.0493, Val Acc=0.9817
+Epoch 14: Loss=0.0462, Val Acc=0.9825
+Epoch 15: Loss=0.0417, Val Acc=0.9827
+Epoch 16: Loss=0.0388, Val Acc=0.9820
+Epoch 17: Loss=0.0377, Val Acc=0.9828
+Epoch 18: Loss=0.0371, Val Acc=0.9820
+Epoch 19: Loss=0.0343, Val Acc=0.9822
+Epoch 20: Loss=0.0355, Val Acc=0.9820
+Baseline test accuracy: 0.9811
+[2/2] Training student with distillation...
+Pre-computing LLM soft labels...
+Epoch 1: Loss=0.3911, Val Acc=0.9533
+Epoch 2: Loss=0.2784, Val Acc=0.9657
+Epoch 3: Loss=0.2548, Val Acc=0.9707
+Epoch 4: Loss=0.2411, Val Acc=0.9730
+Epoch 5: Loss=0.2310, Val Acc=0.9743
+Epoch 6: Loss=0.2236, Val Acc=0.9755
+Epoch 7: Loss=0.2176, Val Acc=0.9777
+Epoch 8: Loss=0.2126, Val Acc=0.9780
+Epoch 9: Loss=0.2083, Val Acc=0.9797
+Epoch 10: Loss=0.2042, Val Acc=0.9802
+Epoch 11: Loss=0.2003, Val Acc=0.9803
+Epoch 12: Loss=0.1971, Val Acc=0.9808
+Epoch 13: Loss=0.1946, Val Acc=0.9808
+Epoch 14: Loss=0.1920, Val Acc=0.9798
+Epoch 15: Loss=0.1896, Val Acc=0.9817
+Epoch 16: Loss=0.1881, Val Acc=0.9808
+Epoch 17: Loss=0.1861, Val Acc=0.9808
+Epoch 18: Loss=0.1857, Val Acc=0.9815
+Epoch 19: Loss=0.1844, Val Acc=0.9808
+Epoch 20: Loss=0.1838, Val Acc=0.9815
+Distillation test accuracy: 0.9786
+
+Running experiments with seed 1011
+[1/2] Training student baseline...
+Epoch 1: Loss=0.4177, Val Acc=0.9445
+Epoch 2: Loss=0.1896, Val Acc=0.9550
+Epoch 3: Loss=0.1447, Val Acc=0.9618
+Epoch 4: Loss=0.1214, Val Acc=0.9700
+Epoch 5: Loss=0.1038, Val Acc=0.9720
+Epoch 6: Loss=0.0913, Val Acc=0.9742
+Epoch 7: Loss=0.0834, Val Acc=0.9727
+Epoch 8: Loss=0.0757, Val Acc=0.9747
+Epoch 9: Loss=0.0684, Val Acc=0.9762
+Epoch 10: Loss=0.0589, Val Acc=0.9753
+Epoch 11: Loss=0.0546, Val Acc=0.9772
+Epoch 12: Loss=0.0490, Val Acc=0.9775
+Epoch 13: Loss=0.0462, Val Acc=0.9785
+Epoch 14: Loss=0.0435, Val Acc=0.9795
+Epoch 15: Loss=0.0386, Val Acc=0.9783
+Epoch 16: Loss=0.0359, Val Acc=0.9778
+Epoch 17: Loss=0.0361, Val Acc=0.9790
+Epoch 18: Loss=0.0341, Val Acc=0.9793
+Epoch 19: Loss=0.0334, Val Acc=0.9797
+Epoch 20: Loss=0.0320, Val Acc=0.9798
+Baseline test accuracy: 0.9816
+[2/2] Training student with distillation...
+Pre-computing LLM soft labels...
+Epoch 1: Loss=0.3925, Val Acc=0.9447
+Epoch 2: Loss=0.2779, Val Acc=0.9622
+Epoch 3: Loss=0.2512, Val Acc=0.9665
+Epoch 4: Loss=0.2392, Val Acc=0.9697
+Epoch 5: Loss=0.2299, Val Acc=0.9702
+Epoch 6: Loss=0.2227, Val Acc=0.9735
+Epoch 7: Loss=0.2160, Val Acc=0.9713
+Epoch 8: Loss=0.2114, Val Acc=0.9738
+Epoch 9: Loss=0.2071, Val Acc=0.9745
+Epoch 10: Loss=0.2038, Val Acc=0.9717
+Epoch 11: Loss=0.1991, Val Acc=0.9733
+Epoch 12: Loss=0.1964, Val Acc=0.9728
+Epoch 13: Loss=0.1935, Val Acc=0.9743
+Epoch 14: Loss=0.1909, Val Acc=0.9760
+Epoch 15: Loss=0.1889, Val Acc=0.9752
+Epoch 16: Loss=0.1871, Val Acc=0.9750
+Epoch 17: Loss=0.1862, Val Acc=0.9748
+Epoch 18: Loss=0.1848, Val Acc=0.9755
+Epoch 19: Loss=0.1844, Val Acc=0.9747
+Epoch 20: Loss=0.1837, Val Acc=0.9748
+Distillation test accuracy: 0.9775
+
+============================================================
+RESULTS SUMMARY
+============================================================
+
+Baseline (Hard Labels):
+  Mean Accuracy: 0.9821 +/- 0.0008
+  95% CI: [0.9812, 0.9831]
+  Individual runs: [0.9829 0.9826 0.9825 0.9811 0.9816]
+
+Distillation (LLM Soft Labels):
+  Mean Accuracy: 0.9772 +/- 0.0013
+  95% CI: [0.9756, 0.9788]
+  Individual runs: [0.9761 0.9756 0.9781 0.9786 0.9775]
+
+Statistical Test (Paired t-test):
+  t-statistic: -5.7949
+  p-value: 0.0044
+  Significant: YES
+
+Absolute Improvement: -0.0050 (-0.50%)
+
+Plot saved to results/results_comparison.png
+
+Experiments complete!
+Results saved to: results
+End time: Fri Feb 20 20:06:57 EST 2026
