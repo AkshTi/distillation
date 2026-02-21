@@ -21,6 +21,7 @@ echo "Start time: $(date)"
 # python distill.py
 # python sweep.py
 # python weakstrong.py
-python logitlogprob.py
+# python logitlogprob.py
+python scaling.py
 
 echo "End time: $(date)"
