@@ -34,6 +34,7 @@ class MLP(nn.Module):
         """
         hidden_sizes: list of ints, e.g. [512, 512] for teacher, [64] for student
         """
+        # can put in whether you want a student or a teacher model 
         super().__init__()
         layers = []
         in_size = 784  # 28*28 flattened
@@ -50,7 +51,9 @@ class MLP(nn.Module):
 
 
 # ── Loss functions ────────────────────────────────────────────────────────────
-def cross_entropy_loss(student_logits, true_labels):
+def cross_entropy_loss(student_logits, true_labels): 
+
+    #calculates on the hard labels and internally appliest he softmax cross_entropy_loss.
     return F.cross_entropy(student_logits, true_labels)
 
 
@@ -65,7 +68,7 @@ def distillation_loss(student_logits, teacher_logits, true_labels, T=TEMPERATURE
 
     # Hard loss: still learn from true labels
     hard_loss = F.cross_entropy(student_logits, true_labels)
-
+    #alphas is the arbitrary set variable that has a considerably lower weight on the label 
     return alpha * soft_loss + (1 - alpha) * hard_loss
 
 
