@@ -1,0 +1,8 @@
+teacher_cfg,student_cfg,sweep,param_name,param_value,alpha,acc,baseline_acc,teacher_acc
+[256],[32],temperature,T,1.0,0.5,0.9631,0.9637,0.9804
+[256],[32],temperature,T,2.0,0.5,0.9643,0.9637,0.9804
+[256],[32],temperature,T,3.0,0.5,0.9635,0.9637,0.9804
+[256],[32],temperature,T,4.0,0.5,0.9638,0.9637,0.9804
+[256],[32],temperature,T,5.0,0.5,0.9637,0.9637,0.9804
+[256],[32],temperature,T,7.0,0.5,0.9597,0.9637,0.9804
+[256],[32],temperature,T,10.0,0.5,0.9609,0.9637,0.9804
