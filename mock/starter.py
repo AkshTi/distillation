@@ -1,15 +1,14 @@
+import csv
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-import matplotlib.pyplot as plt
-import numpy as np
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-BATCH_SIZE = 256
-LR = 1e-3
-SEED = 42
+DEVICE      = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+BATCH_SIZE  = 256
+LR          = 1e-3
+SEED        = 42
 
 transform = transforms.Compose([
     transforms.ToTensor(),
@@ -25,9 +24,9 @@ test_loader  = DataLoader(test_dataset,  batch_size=BATCH_SIZE, shuffle=False)
 
 # ---------------------------------------------------------------------------
 # Configurable MLP
-# Pass hidden_dims to switch between strong/weak models, e.g.:
-#   STRONG_DIMS = [512, 512]
-#   WEAK_DIMS   = [128, 128]
+# hidden_dims controls model capacity, e.g.:
+#   STRONG_DIMS = [512, 512]   (teacher)
+#   WEAK_DIMS   = [128, 128]   (student)
 # ---------------------------------------------------------------------------
 class MLP(nn.Module):
     def __init__(self, input_dim: int = 784, hidden_dims: list = [512, 512], num_classes: int = 10):
@@ -45,10 +44,22 @@ class MLP(nn.Module):
 
 
 # ---------------------------------------------------------------------------
-# Training helpers
+# Helpers
 # ---------------------------------------------------------------------------
+def evaluate(model, loader):
+    model.eval()
+    correct = 0
+    with torch.no_grad():
+        for x, y in loader:
+            x, y = x.to(DEVICE), y.to(DEVICE)
+            correct += (model(x).argmax(1) == y).sum().item()
+    return correct / len(loader.dataset)
+
+
 def train_standard(model, loader, optimizer, epochs: int):
+    """Train with hard labels; returns list of (epoch, train_loss, train_acc)."""
     model.train()
+    history = []
     for epoch in range(1, epochs + 1):
         total_loss, correct = 0.0, 0
         for x, y in loader:
@@ -60,17 +71,12 @@ def train_standard(model, loader, optimizer, epochs: int):
             optimizer.step()
             total_loss += loss.item() * x.size(0)
             correct += (logits.argmax(1) == y).sum().item()
-        print(f"  [Standard] Epoch {epoch:>2} | loss {total_loss/len(loader.dataset):.4f} | acc {correct/len(loader.dataset):.4f}")
-
-
-def evaluate(model, loader):
-    model.eval()
-    correct = 0
-    with torch.no_grad():
-        for x, y in loader:
-            x, y = x.to(DEVICE), y.to(DEVICE)
-            correct += (model(x).argmax(1) == y).sum().item()
-    return correct / len(loader.dataset)
+        train_loss = total_loss / len(loader.dataset)
+        train_acc  = correct   / len(loader.dataset)
+        test_acc   = evaluate(model, test_loader)
+        history.append((epoch, train_loss, train_acc, test_acc))
+        print(f"  [Standard] Epoch {epoch:>2} | loss {train_loss:.4f} | train_acc {train_acc:.4f} | test_acc {test_acc:.4f}")
+    return history
 
 
 # ---------------------------------------------------------------------------
@@ -78,23 +84,21 @@ def evaluate(model, loader):
 #
 # L = alpha * CE(student_logits, hard_labels)
 #   + (1 - alpha) * T^2 * KL(softmax(teacher/T) || softmax(student/T))
-#
-# The T^2 factor re-scales the gradient to match the magnitude it would have
-# at temperature 1, as described in the original paper.
 # ---------------------------------------------------------------------------
 def distillation_loss(student_logits, teacher_logits, labels, T: float, alpha: float):
     soft_teacher = F.softmax(teacher_logits / T, dim=1)
     soft_student = F.log_softmax(student_logits / T, dim=1)
-
-    kd_loss  = F.kl_div(soft_student, soft_teacher, reduction='batchmean') * (T ** 2)
-    ce_loss  = F.cross_entropy(student_logits, labels)
+    kd_loss = F.kl_div(soft_student, soft_teacher, reduction='batchmean') * (T ** 2)
+    ce_loss = F.cross_entropy(student_logits, labels)
     return alpha * ce_loss + (1.0 - alpha) * kd_loss
 
 
 def train_distillation(student, teacher, loader, optimizer,
-                        epochs: int, T: float = 4.0, alpha: float = 0.1):
+                       epochs: int, T: float, alpha: float):
+    """Train student via distillation; returns list of (epoch, train_loss, train_acc, test_acc)."""
     teacher.eval()
     student.train()
+    history = []
     for epoch in range(1, epochs + 1):
         total_loss, correct = 0.0, 0
         for x, y in loader:
@@ -108,7 +112,12 @@ def train_distillation(student, teacher, loader, optimizer,
             optimizer.step()
             total_loss += loss.item() * x.size(0)
             correct += (student_logits.argmax(1) == y).sum().item()
-        print(f"  [Distill]  Epoch {epoch:>2} | loss {total_loss/len(loader.dataset):.4f} | acc {correct/len(loader.dataset):.4f}")
+        train_loss = total_loss / len(loader.dataset)
+        train_acc  = correct   / len(loader.dataset)
+        test_acc   = evaluate(student, test_loader)
+        history.append((epoch, train_loss, train_acc, test_acc))
+        print(f"  [T={T:.0f}] Epoch {epoch:>2} | loss {train_loss:.4f} | train_acc {train_acc:.4f} | test_acc {test_acc:.4f}")
+    return history
 
 
 # ---------------------------------------------------------------------------
@@ -117,15 +126,16 @@ def train_distillation(student, teacher, loader, optimizer,
 if __name__ == "__main__":
     torch.manual_seed(SEED)
 
-    TEACHER_EPOCHS  = 10
-    STUDENT_EPOCHS  = 10
-    TEMPERATURE     = 4.0   # softens teacher distribution
-    ALPHA           = 0.1   # weight on hard-label CE loss
+    TEACHER_EPOCHS = 10
+    STUDENT_EPOCHS = 10
+    ALPHA          = 0.1   # weight on hard-label CE vs soft KD loss
 
-    STRONG_DIMS = [512, 512]   # teacher (stronger model)
-    WEAK_DIMS   = [128, 128]   # student (weaker model)
+    STRONG_DIMS = [512, 512]   # teacher
+    WEAK_DIMS   = [128, 128]   # student
 
-    # --- Train teacher ---
+    TEMPERATURES = list(range(1, 11))   # T = 1, 2, ..., 10
+
+    # --- Train teacher once ---
     print("=== Training teacher (strong model) ===")
     teacher = MLP(hidden_dims=STRONG_DIMS).to(DEVICE)
     opt_t   = torch.optim.Adam(teacher.parameters(), lr=LR)
@@ -133,26 +143,61 @@ if __name__ == "__main__":
     teacher_acc = evaluate(teacher, test_loader)
     print(f"  Teacher test acc: {teacher_acc:.4f}\n")
 
-    # --- Train student from scratch (baseline) ---
+    # --- Train student baseline once ---
     print("=== Training student from scratch (baseline) ===")
+    torch.manual_seed(SEED)
     student_baseline = MLP(hidden_dims=WEAK_DIMS).to(DEVICE)
     opt_sb = torch.optim.Adam(student_baseline.parameters(), lr=LR)
-    train_standard(student_baseline, train_loader, opt_sb, STUDENT_EPOCHS)
+    baseline_history = train_standard(student_baseline, train_loader, opt_sb, STUDENT_EPOCHS)
     baseline_acc = evaluate(student_baseline, test_loader)
     print(f"  Student (baseline) test acc: {baseline_acc:.4f}\n")
 
-    # --- Train student via distillation ---
-    print(f"=== Distilling teacher → student  (T={TEMPERATURE}, alpha={ALPHA}) ===")
-    student_kd = MLP(hidden_dims=WEAK_DIMS).to(DEVICE)
-    opt_kd     = torch.optim.Adam(student_kd.parameters(), lr=LR)
-    train_distillation(student_kd, teacher, train_loader, opt_kd,
-                       STUDENT_EPOCHS, T=TEMPERATURE, alpha=ALPHA)
-    kd_acc = evaluate(student_kd, test_loader)
-    print(f"  Student (distilled) test acc: {kd_acc:.4f}\n")
+    # --- Sweep temperatures ---
+    csv_rows = []
 
-    # --- Summary ---
-    print("=== Results ===")
-    print(f"  Teacher  {STRONG_DIMS}: {teacher_acc:.4f}")
-    print(f"  Student  {WEAK_DIMS} (scratch):      {baseline_acc:.4f}")
-    print(f"  Student  {WEAK_DIMS} (distilled):    {kd_acc:.4f}")
-    print(f"  Distillation gain: {kd_acc - baseline_acc:+.4f}")
+    # Baseline rows (T=0 sentinel so it sorts cleanly)
+    for (epoch, train_loss, train_acc, test_acc) in baseline_history:
+        csv_rows.append({
+            "run":        "baseline",
+            "T":          0,
+            "alpha":      "-",
+            "epoch":      epoch,
+            "train_loss": round(train_loss, 6),
+            "train_acc":  round(train_acc,  6),
+            "test_acc":   round(test_acc,   6),
+        })
+
+    for T in TEMPERATURES:
+        print(f"=== Distilling  T={T}  alpha={ALPHA} ===")
+        torch.manual_seed(SEED)
+        student_kd = MLP(hidden_dims=WEAK_DIMS).to(DEVICE)
+        opt_kd     = torch.optim.Adam(student_kd.parameters(), lr=LR)
+        history    = train_distillation(student_kd, teacher, train_loader, opt_kd,
+                                        STUDENT_EPOCHS, T=T, alpha=ALPHA)
+        for (epoch, train_loss, train_acc, test_acc) in history:
+            csv_rows.append({
+                "run":        "distilled",
+                "T":          T,
+                "alpha":      ALPHA,
+                "epoch":      epoch,
+                "train_loss": round(train_loss, 6),
+                "train_acc":  round(train_acc,  6),
+                "test_acc":   round(test_acc,   6),
+            })
+        print()
+
+    # --- Write CSV ---
+    csv_path = "temperature_sweep.csv"
+    fieldnames = ["run", "T", "alpha", "epoch", "train_loss", "train_acc", "test_acc"]
+    with open(csv_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(csv_rows)
+
+    print(f"=== Saved results to {csv_path} ===")
+    print(f"  Teacher          {STRONG_DIMS}: {teacher_acc:.4f}")
+    print(f"  Student baseline {WEAK_DIMS}:   {baseline_acc:.4f}")
+    for T in TEMPERATURES:
+        final = [r for r in csv_rows if r["run"] == "distilled" and r["T"] == T and r["epoch"] == STUDENT_EPOCHS]
+        if final:
+            print(f"  Student distilled T={T:<2}:          {final[0]['test_acc']:.4f}")
