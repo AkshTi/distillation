@@ -142,11 +142,12 @@ def train_distillation(student, teacher, train_loader, optimizer,
     return history
 
 
-def record(rows, history, excluded, model_name, T, alpha):
+def record(rows, history, excluded, model_name, T, alpha, student_dims="-"):
     for (epoch, train_loss, train_acc, acc_seen, acc_excl) in history:
         rows.append({
             "excluded_digit":    excluded,
             "model":             model_name,
+            "student_dims":      str(student_dims),
             "T":                 T,
             "alpha":             alpha,
             "epoch":             epoch,
@@ -178,8 +179,16 @@ if __name__ == "__main__":
     ALPHA          = 0.1
     T_FIXED        = 8
 
-    STRONG_DIMS = [512, 512]
-    WEAK_DIMS   = [128, 128]
+    STRONG_DIMS   = [512, 512]
+    BASELINE_DIMS = [128, 128]   # fixed reference for baseline
+
+    # Student sizes swept for distillation runs only
+    STUDENT_SIZES = [
+        [32,  32],
+        [64,  64],
+        [128, 128],
+        [256, 256],
+    ]
 
     ALL_DIGITS = list(range(10))
     csv_rows   = []
@@ -190,13 +199,13 @@ if __name__ == "__main__":
         print(f"{'='*65}")
 
         # Filtered train (no digit d) + test of only digit d
-        train_filtered       = exclude_digit(train_dataset, excluded)
-        test_excl_only       = only_digit(test_dataset, excluded)
-        train_loader_filt    = DataLoader(train_filtered, batch_size=BATCH_SIZE, shuffle=True)
-        test_loader_excl     = DataLoader(test_excl_only, batch_size=BATCH_SIZE, shuffle=False)
+        train_filtered    = exclude_digit(train_dataset, excluded)
+        test_excl_only    = only_digit(test_dataset, excluded)
+        train_loader_filt = DataLoader(train_filtered, batch_size=BATCH_SIZE, shuffle=True)
+        test_loader_excl  = DataLoader(test_excl_only, batch_size=BATCH_SIZE, shuffle=False)
 
         # ---- Teacher (strong model, same filtered set) ----
-        print(f"\n  -- Teacher [512,512]  (digit {excluded} excluded) --")
+        print(f"\n  -- Teacher {STRONG_DIMS}  (digit {excluded} excluded) --")
         torch.manual_seed(SEED)
         teacher = MLP(hidden_dims=STRONG_DIMS).to(DEVICE)
         opt_t   = torch.optim.Adam(teacher.parameters(), lr=LR)
@@ -206,12 +215,12 @@ if __name__ == "__main__":
             test_loader_excl=test_loader_excl,
             label=f"Teacher excl={excluded}",
         )
-        record(csv_rows, t_hist, excluded, "teacher", "-", "-")
+        record(csv_rows, t_hist, excluded, "teacher", "-", "-", student_dims=STRONG_DIMS)
 
-        # ---- Baseline student (standard CE, same filtered set) ----
-        print(f"\n  -- Baseline [128,128]  (digit {excluded} excluded) --")
+        # ---- Baseline student (standard CE, fixed size, same filtered set) ----
+        print(f"\n  -- Baseline {BASELINE_DIMS}  (digit {excluded} excluded) --")
         torch.manual_seed(SEED)
-        student_base = MLP(hidden_dims=WEAK_DIMS).to(DEVICE)
+        student_base = MLP(hidden_dims=BASELINE_DIMS).to(DEVICE)
         opt_base     = torch.optim.Adam(student_base.parameters(), lr=LR)
         base_hist    = train_standard(
             student_base, train_loader_filt, opt_base, STUDENT_EPOCHS,
@@ -219,26 +228,27 @@ if __name__ == "__main__":
             test_loader_excl=test_loader_excl,
             label=f"Base excl={excluded}",
         )
-        record(csv_rows, base_hist, excluded, "baseline", "-", "-")
+        record(csv_rows, base_hist, excluded, "baseline", "-", "-", student_dims=BASELINE_DIMS)
 
-        # ---- Distilled student (T=3, from teacher above) ----
-        print(f"\n  -- Distilled [128,128] T={T_FIXED}  (digit {excluded} excluded) --")
-        torch.manual_seed(SEED)
-        student_kd = MLP(hidden_dims=WEAK_DIMS).to(DEVICE)
-        opt_kd     = torch.optim.Adam(student_kd.parameters(), lr=LR)
-        kd_hist    = train_distillation(
-            student_kd, teacher, train_loader_filt, opt_kd,
-            STUDENT_EPOCHS, T=T_FIXED, alpha=ALPHA,
-            test_loader_seen=test_loader_full,
-            test_loader_excl=test_loader_excl,
-            label=f"KD T={T_FIXED} excl={excluded}",
-        )
-        record(csv_rows, kd_hist, excluded, "distilled", T_FIXED, ALPHA)
+        # ---- Distilled students — sweep over sizes, T fixed ----
+        for dims in STUDENT_SIZES:
+            print(f"\n  -- Distilled {dims} T={T_FIXED}  (digit {excluded} excluded) --")
+            torch.manual_seed(SEED)
+            student_kd = MLP(hidden_dims=dims).to(DEVICE)
+            opt_kd     = torch.optim.Adam(student_kd.parameters(), lr=LR)
+            kd_hist    = train_distillation(
+                student_kd, teacher, train_loader_filt, opt_kd,
+                STUDENT_EPOCHS, T=T_FIXED, alpha=ALPHA,
+                test_loader_seen=test_loader_full,
+                test_loader_excl=test_loader_excl,
+                label=f"KD {dims} T={T_FIXED} excl={excluded}",
+            )
+            record(csv_rows, kd_hist, excluded, "distilled", T_FIXED, ALPHA, student_dims=dims)
 
     # --- Write CSV ---
     csv_path   = "exclusion_experiment.csv"
     fieldnames = [
-        "excluded_digit", "model", "T", "alpha",
+        "excluded_digit", "model", "student_dims", "T", "alpha",
         "epoch", "train_loss", "train_acc",
         "test_acc_seen", "test_acc_excluded",
     ]
@@ -249,18 +259,24 @@ if __name__ == "__main__":
 
     print(f"\n=== Saved results to {csv_path} ===")
 
-    # Summary: final-epoch performance on the excluded digit for each model/digit
-    print(f"\n{'digit':<8} {'teacher (excl)':<18} {'baseline (excl)':<18} {'distilled T=3 (excl)':<22} {'KD gain'}")
-    print("-" * 75)
+    # Summary: final-epoch test_acc_excluded per digit and student size
+    size_strs = [str(d) for d in STUDENT_SIZES]
+    header = f"{'digit':<7} {'teacher':<10} {'baseline':<11}" + "".join(f"  distilled{str(d):<14}" for d in STUDENT_SIZES)
+    print(f"\n{header}")
+    print("-" * (7 + 10 + 11 + 16 * len(STUDENT_SIZES)))
     for excluded in ALL_DIGITS:
-        def final(model_name):
+        def final(model_name, dims=None):
             return next(
                 r for r in csv_rows
                 if r["excluded_digit"] == excluded
                 and r["model"] == model_name
                 and r["epoch"] == STUDENT_EPOCHS
+                and (dims is None or r["student_dims"] == str(dims))
             )
-        t = float(final("teacher")  ["test_acc_excluded"])
-        b = float(final("baseline") ["test_acc_excluded"])
-        k = float(final("distilled")["test_acc_excluded"])
-        print(f"  {excluded:<6}   {t:<18.4f} {b:<18.4f} {k:<22.4f} {k-b:+.4f}")
+        t = float(final("teacher")         ["test_acc_excluded"])
+        b = float(final("baseline")        ["test_acc_excluded"])
+        row = f"  {excluded:<5}  {t:<10.4f} {b:<11.4f}"
+        for dims in STUDENT_SIZES:
+            k = float(final("distilled", dims)["test_acc_excluded"])
+            row += f"  {k:<10.4f}({k-b:+.4f})"
+        print(row)
