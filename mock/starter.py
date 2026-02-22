@@ -131,11 +131,20 @@ if __name__ == "__main__":
     ALPHA          = 0.1   # weight on hard-label CE vs soft KD loss
 
     STRONG_DIMS = [512, 512]   # teacher
-    WEAK_DIMS   = [128, 128]   # student
+    WEAK_DIMS   = [128, 128]   # baseline student
 
-    TEMPERATURES = list(range(1, 11))   # T = 1, 2, ..., 10
+    TEMPERATURES  = list(range(1, 11))   # T = 1, 2, ..., 10
+    T_BEST        = 8                    # fixed T for the model-size sweep
 
-    # --- Train teacher once ---
+    # Student sizes swept in the second experiment (T fixed at T_BEST)
+    STUDENT_SIZES = [
+        [32,  32],
+        [64,  64],
+        [128, 128],
+        [256, 256],
+    ]
+
+    # --- Train teacher once (used by both sweeps) ---
     print("=== Training teacher (strong model) ===")
     teacher = MLP(hidden_dims=STRONG_DIMS).to(DEVICE)
     opt_t   = torch.optim.Adam(teacher.parameters(), lr=LR)
@@ -143,7 +152,7 @@ if __name__ == "__main__":
     teacher_acc = evaluate(teacher, test_loader)
     print(f"  Teacher test acc: {teacher_acc:.4f}\n")
 
-    # --- Train student baseline once ---
+    # --- Train baseline student once ---
     print("=== Training student from scratch (baseline) ===")
     torch.manual_seed(SEED)
     student_baseline = MLP(hidden_dims=WEAK_DIMS).to(DEVICE)
@@ -152,13 +161,15 @@ if __name__ == "__main__":
     baseline_acc = evaluate(student_baseline, test_loader)
     print(f"  Student (baseline) test acc: {baseline_acc:.4f}\n")
 
-    # --- Sweep temperatures ---
-    csv_rows = []
+    # =========================================================================
+    # Experiment 1 — Temperature sweep  (student fixed at WEAK_DIMS)
+    # =========================================================================
+    temp_rows = []
 
-    # Baseline rows (T=0 sentinel so it sorts cleanly)
     for (epoch, train_loss, train_acc, test_acc) in baseline_history:
-        csv_rows.append({
+        temp_rows.append({
             "run":        "baseline",
+            "student_dims": str(WEAK_DIMS),
             "T":          0,
             "alpha":      "-",
             "epoch":      epoch,
@@ -168,36 +179,96 @@ if __name__ == "__main__":
         })
 
     for T in TEMPERATURES:
-        print(f"=== Distilling  T={T}  alpha={ALPHA} ===")
+        print(f"=== [Temp sweep] Distilling  T={T}  student={WEAK_DIMS} ===")
         torch.manual_seed(SEED)
         student_kd = MLP(hidden_dims=WEAK_DIMS).to(DEVICE)
         opt_kd     = torch.optim.Adam(student_kd.parameters(), lr=LR)
         history    = train_distillation(student_kd, teacher, train_loader, opt_kd,
                                         STUDENT_EPOCHS, T=T, alpha=ALPHA)
         for (epoch, train_loss, train_acc, test_acc) in history:
-            csv_rows.append({
-                "run":        "distilled",
-                "T":          T,
-                "alpha":      ALPHA,
-                "epoch":      epoch,
-                "train_loss": round(train_loss, 6),
-                "train_acc":  round(train_acc,  6),
-                "test_acc":   round(test_acc,   6),
+            temp_rows.append({
+                "run":          "distilled",
+                "student_dims": str(WEAK_DIMS),
+                "T":            T,
+                "alpha":        ALPHA,
+                "epoch":        epoch,
+                "train_loss":   round(train_loss, 6),
+                "train_acc":    round(train_acc,  6),
+                "test_acc":     round(test_acc,   6),
             })
         print()
 
-    # --- Write CSV ---
-    csv_path = "temperature_sweep.csv"
-    fieldnames = ["run", "T", "alpha", "epoch", "train_loss", "train_acc", "test_acc"]
-    with open(csv_path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+    temp_csv = "temperature_sweep.csv"
+    temp_fields = ["run", "student_dims", "T", "alpha", "epoch", "train_loss", "train_acc", "test_acc"]
+    with open(temp_csv, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=temp_fields)
         writer.writeheader()
-        writer.writerows(csv_rows)
+        writer.writerows(temp_rows)
+    print(f"=== Saved {temp_csv} ===")
 
-    print(f"=== Saved results to {csv_path} ===")
-    print(f"  Teacher          {STRONG_DIMS}: {teacher_acc:.4f}")
-    print(f"  Student baseline {WEAK_DIMS}:   {baseline_acc:.4f}")
+    # =========================================================================
+    # Experiment 2 — Model-size sweep  (T fixed at T_BEST)
+    # =========================================================================
+    size_rows = []
+
+    # Baseline row per student size (trained from scratch at that size)
+    for dims in STUDENT_SIZES:
+        print(f"=== [Size sweep] Baseline {dims} ===")
+        torch.manual_seed(SEED)
+        sb = MLP(hidden_dims=dims).to(DEVICE)
+        op = torch.optim.Adam(sb.parameters(), lr=LR)
+        hist = train_standard(sb, train_loader, op, STUDENT_EPOCHS)
+        for (epoch, train_loss, train_acc, test_acc) in hist:
+            size_rows.append({
+                "run":          "baseline",
+                "student_dims": str(dims),
+                "T":            "-",
+                "alpha":        "-",
+                "epoch":        epoch,
+                "train_loss":   round(train_loss, 6),
+                "train_acc":    round(train_acc,  6),
+                "test_acc":     round(test_acc,   6),
+            })
+        print()
+
+    # Distilled row per student size at T_BEST
+    for dims in STUDENT_SIZES:
+        print(f"=== [Size sweep] Distilled {dims}  T={T_BEST} ===")
+        torch.manual_seed(SEED)
+        sk = MLP(hidden_dims=dims).to(DEVICE)
+        ok = torch.optim.Adam(sk.parameters(), lr=LR)
+        hist = train_distillation(sk, teacher, train_loader, ok,
+                                  STUDENT_EPOCHS, T=T_BEST, alpha=ALPHA)
+        for (epoch, train_loss, train_acc, test_acc) in hist:
+            size_rows.append({
+                "run":          "distilled",
+                "student_dims": str(dims),
+                "T":            T_BEST,
+                "alpha":        ALPHA,
+                "epoch":        epoch,
+                "train_loss":   round(train_loss, 6),
+                "train_acc":    round(train_acc,  6),
+                "test_acc":     round(test_acc,   6),
+            })
+        print()
+
+    size_csv = "model_size_sweep.csv"
+    size_fields = ["run", "student_dims", "T", "alpha", "epoch", "train_loss", "train_acc", "test_acc"]
+    with open(size_csv, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=size_fields)
+        writer.writeheader()
+        writer.writerows(size_rows)
+    print(f"=== Saved {size_csv} ===")
+
+    # --- Combined summary ---
+    print(f"\n  Teacher {STRONG_DIMS}: {teacher_acc:.4f}")
+    print(f"\n  [Temp sweep]  student={WEAK_DIMS}")
     for T in TEMPERATURES:
-        final = [r for r in csv_rows if r["run"] == "distilled" and r["T"] == T and r["epoch"] == STUDENT_EPOCHS]
-        if final:
-            print(f"  Student distilled T={T:<2}:          {final[0]['test_acc']:.4f}")
+        row = next(r for r in temp_rows if r["run"] == "distilled" and r["T"] == T and r["epoch"] == STUDENT_EPOCHS)
+        print(f"    T={T:<2}  test_acc={row['test_acc']:.4f}")
+
+    print(f"\n  [Size sweep]  T={T_BEST}")
+    for dims in STUDENT_SIZES:
+        b = next(r for r in size_rows if r["run"] == "baseline"  and r["student_dims"] == str(dims) and r["epoch"] == STUDENT_EPOCHS)
+        k = next(r for r in size_rows if r["run"] == "distilled" and r["student_dims"] == str(dims) and r["epoch"] == STUDENT_EPOCHS)
+        print(f"    {str(dims):<12}  baseline={b['test_acc']:.4f}  distilled={k['test_acc']:.4f}  gain={float(k['test_acc'])-float(b['test_acc']):+.4f}")
